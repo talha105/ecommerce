@@ -37,7 +37,7 @@ const MyTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    card:'#f79e10',
+    card:'#a2a725',
     background:'white',
     text:'#000000'
   }
@@ -46,7 +46,7 @@ const darkTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    card:'#f79e10',
+    card:'#a2a725',
     background:'#404040',
     text:'#ffffff'
   }
