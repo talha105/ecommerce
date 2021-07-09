@@ -11,10 +11,12 @@ import Loader from '../../components/pageLoader';
 import ProductItem from '../../components/productItem';
 import {useTheme} from "@react-navigation/native";
 import SearchBar from '../../components/searchBar';
-import * as actions from "../../store/action"
-import {connect} from "react-redux"
+import NotFoundIcon from "react-native-vector-icons/AntDesign";
+import * as actions from "../../store/action";
+import {connect} from "react-redux";
 
-function Home ({navigation,getBanners,banners}){
+
+function Home ({navigation,getBanners,banners,latestProduct,getLatestProduct}){
     const {colors}=useTheme();
     const [images,setImages]=useState([
         require('../../../assets/1.png'),
@@ -31,7 +33,9 @@ function Home ({navigation,getBanners,banners}){
                 </View>
             ),
             headerRight: () => (
-                <TouchableOpacity style={{paddingRight:responsiveWidth(5)}}>
+                <TouchableOpacity 
+                onPress={()=>navigation.jumpTo('profile')}
+                style={{paddingRight:responsiveWidth(5)}}>
                     <ProfileIcon name="user-circle" size={22} color='white'/>
                 </TouchableOpacity>
             )
@@ -40,7 +44,9 @@ function Home ({navigation,getBanners,banners}){
     },[navigation])
 
     useEffect(()=>{
-        getBanners().then(()=>setLoading(false))
+        Promise.all([getBanners(),getLatestProduct()]).then(()=>{
+            setLoading(false)
+        })
     },[])
 
 
@@ -48,12 +54,12 @@ function Home ({navigation,getBanners,banners}){
     function renderProduct({item}){
         return(
             <ProductItem
-            title="Niki Shoes"
-            price="$300"
-            oldPrice="$400"
-            img={require('../../../assets/shoe.png')}
-            call={()=>navigation.push('productDetail')}
-            fav={false}
+            title={item.title}
+            price={`$${item.price}`}
+            oldPrice={`$${Math.round(((parseInt(item.discount)/100)*item.price)+parseInt(item.price))}`}
+            img={{uri:item.images}}
+            call={()=>navigation.push('productDetail',item)}
+            latest={item.is_latest?true:false}
             />
         )
     }
@@ -78,14 +84,25 @@ function Home ({navigation,getBanners,banners}){
                         </Text>
                     </View>
                 </View>
-                <FlatList
-                contentContainerStyle={{paddingBottom:10,alignItems:'center'}}
-                showsVerticalScrollIndicator={false}
-                numColumns={2}
-                data={[1,1,1,1,1,1,1,1,1,1,1,1,1,1]}
-                renderItem={renderProduct}
-                keyExtractor={(item,i)=>i.toString()}
-                />
+                {latestProduct.length>0?(
+                    <FlatList
+                    contentContainerStyle={{paddingBottom:10,alignContent:'space-around'}}
+                    showsVerticalScrollIndicator={false}
+                    numColumns={2}
+                    data={latestProduct}
+                    renderItem={renderProduct}
+                    keyExtractor={(item,i)=>i.toString()}
+                    />
+                ):(
+                    <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+                        <NotFoundIcon
+                        name="search1"
+                        size={responsiveFontSize(8)}
+                        color="grey"
+                        />
+                        <Text style={{fontSize:responsiveFontSize(4),color:'grey',fontFamily:'Montserrat-Bold'}}>Not Found</Text>
+                    </View>
+                )}
             </View>
         )
     }
@@ -106,8 +123,8 @@ const styles=StyleSheet.create({
     }
 })
 
-function mapStateToProp({banners}){
-    return {banners}
+function mapStateToProp({banners,latestProduct}){
+    return {banners,latestProduct}
 }
 
 export default connect(mapStateToProp,actions)(Home);

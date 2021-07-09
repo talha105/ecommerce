@@ -257,7 +257,7 @@ function Routes({theme,user,setUserOnload}){
     getId()
 
     messaging()
-      .subscribeToTopic('ecommerce')
+      .subscribeToTopic('ecomerce')
       .then(() => console.log('Subscribed to topic!'));
 
       messaging().onNotificationOpenedApp(remoteMessage => {

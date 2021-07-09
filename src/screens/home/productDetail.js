@@ -29,7 +29,9 @@ function ProductDetail({navigation,addtocardAction,route,busket}){
         navigation.setOptions({
             headerTitle: props => <Text style={{textAlign:'center',color:'white',fontSize:responsiveFontSize(2.5),textTransform:'uppercase',fontFamily:'Montserrat-Bold'}}>{props.children}</Text>,
             headerRight: () => (
-                <TouchableOpacity style={{paddingRight:responsiveWidth(5)}}>
+                <TouchableOpacity 
+                onPress={()=>navigation.jumpTo('profile')}
+                style={{paddingRight:responsiveWidth(5)}}>
                     <ProfileIcon name="user-circle" size={22} color='white'/>
                 </TouchableOpacity>
             ),
@@ -162,7 +164,7 @@ function ProductDetail({navigation,addtocardAction,route,busket}){
                     </View>
                     <View style={{marginVertical:responsiveFontSize(1),width:'90%',flexDirection:'row',justifyContent:'space-around',alignItems:'center'}}>
                         <Text
-                        style={{textAlign:'center',textAlignVertical:'center',color:colors.text,fontFamily:'Montserrat-Medium',backgroundColor:colors.card,height:responsiveFontSize(5),width:'30%',borderRadius:7}}
+                        style={{textAlign:'center',textAlignVertical:'center',color:'white',fontFamily:'Montserrat-Medium',backgroundColor:colors.card,height:responsiveFontSize(5),width:'30%',borderRadius:7}}
                         >Quantity</Text>
                         <TextInput
                         editable={false}

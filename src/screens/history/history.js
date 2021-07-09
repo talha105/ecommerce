@@ -12,8 +12,10 @@ import {useTheme} from "@react-navigation/native";
 import NotifyModel from '../../components/notifyModel';
 import NotFoundIcon from "react-native-vector-icons/AntDesign";
 import { justifyContent } from 'styled-system';
+import { connect } from 'react-redux';
+import * as actions from "../../store/action"
 
-function History ({navigation}){
+function History ({navigation,id,history,getHistory,getProfile}){
     const {colors}=useTheme();
     const [loading,setLoading]=useState(true)
 
@@ -32,15 +34,25 @@ function History ({navigation}){
     },[navigation])
 
     useEffect(()=>{
-        setLoading(false)
+        getHistory(id).then(()=>setLoading(false))
+        getProfile(id)
     },[])
 
 
 
     function renderProduct({item}){
+        const data=JSON.parse(item.data)
+
+        function titleText(){
+            let text=""
+            data.forEach((item)=>{
+                text=text+", "+item.title
+            })
+            return text
+        }
         return(
             <TouchableOpacity 
-            onPress={()=>navigation.push('historyDetail')}
+            onPress={()=>navigation.push('historyDetail',{...item,data:data})}
             activeOpacity={0.7} style={{...styles.con,backgroundColor:colors.background}}>
                 <View style={{justifyContent:'center',alignItems:'center',width:'25%'}}>
                     <BasketIcon 
@@ -51,15 +63,15 @@ function History ({navigation}){
                 </View>
                 <View style={{justifyContent:'center',width:'75%'}}>
                 <View style={{width:'100%',flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingRight:responsiveFontSize(2),marginVertical:responsiveFontSize(0.2)}}>
-                <Text style={{color:colors.card,fontFamily:'Montserrat-Medium',marginVertical:responsiveFontSize(0.2)}}>Camera, Tshirts, Per...</Text>
-                        <Text style={{fontSize:responsiveFontSize(1.5),textAlign:'left',color:'grey'}}>#433165754</Text>
+                <Text style={{color:colors.card,fontFamily:'Montserrat-Medium',marginVertical:responsiveFontSize(0.2)}}>{titleText().length>25?titleText().slice(2,25)+"...":titleText().slice(2,titleText().length)}</Text>
+                        <Text style={{fontSize:responsiveFontSize(1.5),textAlign:'left',color:'grey'}}>{item.id}</Text>
                     </View>
                     <View style={{width:'100%',flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingRight:responsiveFontSize(2),marginVertical:responsiveFontSize(0.2)}}>
-                        <Text style={{fontSize:responsiveFontSize(1.5),textAlign:'left',color:'grey'}}>price: 300$</Text>
+                        <Text style={{fontSize:responsiveFontSize(1.5),textAlign:'left',color:'grey'}}>price: {item.total_price}$</Text>
                     </View>
                     <View style={{width:'100%',flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingRight:responsiveFontSize(2),marginVertical:responsiveFontSize(0.2)}}>
-                        <Text style={{fontSize:responsiveFontSize(1.5),textAlign:'left',color:'grey'}}>Item: 4</Text>
-                        <Text style={{fontSize:responsiveFontSize(1.5),textAlign:'left',color:'grey'}}>02/04/2021</Text>
+                        <Text style={{fontSize:responsiveFontSize(1.5),textAlign:'left',color:'grey'}}>Item: {data.length}</Text>
+                        <Text style={{fontSize:responsiveFontSize(1.5),textAlign:'left',color:'grey'}}>{item.created_at.slice(0,10)}</Text>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -75,7 +87,7 @@ function History ({navigation}){
                     <FlatList
                     contentContainerStyle={{paddingBottom:responsiveFontSize(1),alignItems:'center',paddingHorizontal:responsiveFontSize(1)}}
                     showsVerticalScrollIndicator={false}
-                    data={[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]}
+                    data={history.reverse()}
                     renderItem={renderProduct}
                     keyExtractor={(item,i)=>i.toString()}
                     />
@@ -112,4 +124,8 @@ const styles=StyleSheet.create({
     }
 })
 
-export default History;
+function mapStateToProps({user,history}){
+    return{history,id:user.data.data.id,}
+}
+
+export default connect(mapStateToProps,actions)(History);

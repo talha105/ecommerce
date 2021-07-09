@@ -7,15 +7,17 @@ import {
     responsiveFontSize
   } from "react-native-responsive-dimensions";
 import {useTheme} from "@react-navigation/native";
-import {useNavigation} from "@react-navigation/native"
+import {useNavigation} from "@react-navigation/native";
+import * as actions from "../store/action"
+import { connect } from 'react-redux';
 
-function SearchBar({call}){
+function SearchBar(){
     const {colors}=useTheme();
     const navigation=useNavigation()
     const [searchText,setSearctText]=useState("")
     function onSearch(){
         if(searchText){
-            navigation.push("search")
+            navigation.push("search",{text:searchText})
         }
     }
     return(
@@ -54,4 +56,4 @@ function SearchBar({call}){
     )
 }
 
-export default SearchBar;
+export default connect(null, actions)(SearchBar);

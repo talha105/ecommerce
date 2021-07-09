@@ -1,5 +1,5 @@
 import {
-    ADDTOCARD, DELECT_CARD_ITEM
+    ADDTOCARD, CLEAR_BUSKET, DELECT_CARD_ITEM
     } from "../action/type"
     
     
@@ -14,6 +14,8 @@ import {
                 console.log(action.payload)
                 console.log(state)
                 return [...state].filter((item)=>item.id!=action.payload)
+            case CLEAR_BUSKET:
+                return action.payload;
             default :
                 return state
         }

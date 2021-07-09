@@ -8,9 +8,12 @@ import {
 import BasketIcon from "react-native-vector-icons/Fontisto";
 import ProductItem from '../../components/productItem';
 import Loader from '../../components/pageLoader';
-import {useTheme} from "@react-navigation/native"
+import { connect } from 'react-redux';
+import {useTheme} from "@react-navigation/native";
+import NotFoundIcon from "react-native-vector-icons/AntDesign";
+import * as actions from "../../store/action"
 
-function Search ({navigation}){
+function Search ({navigation,searchProduct,getSearchProduct,route}){
     const {colors}=useTheme();
 
     const [loading,setLoading]=useState(true)
@@ -18,7 +21,9 @@ function Search ({navigation}){
     useLayoutEffect(()=>{
         navigation.setOptions({
             headerRight: () => (
-              <TouchableOpacity style={{paddingRight:responsiveWidth(3)}}>
+              <TouchableOpacity 
+              onPress={()=>navigation.jumpTo('profile')}
+              style={{paddingRight:responsiveWidth(3)}}>
                   <BasketIcon name="shopping-basket-add" size={20} color='white'/>
               </TouchableOpacity>
             )
@@ -27,7 +32,7 @@ function Search ({navigation}){
     },[navigation])
 
     useEffect(()=>{
-        setLoading(false)
+        getSearchProduct(route.params.text).then(()=>setLoading(false))
     },[])
 
 
@@ -35,12 +40,12 @@ function Search ({navigation}){
     function renderProduct({item}){
         return(
             <ProductItem
-            title="Niki Shoes"
-            price="$300"
-            oldPrice="$400"
-            img={require('../../../assets/shoe.png')}
-            call={()=>navigation.push('productDetail')}
-            fav={false}
+            title={item.title}
+            price={`$${item.price}`}
+            oldPrice={`$${Math.round(((parseInt(item.discount)/100)*item.price)+parseInt(item.price))}`}
+            img={{uri:item.images}}
+            call={()=>navigation.push('productDetail',item)}
+            latest={item.is_latest?true:false}
             />
         )
     }
@@ -50,14 +55,27 @@ function Search ({navigation}){
     }else{
         return(
             <View style={{flex:1}}>
-                <FlatList
-                contentContainerStyle={{paddingBottom:10,alignItems:'center'}}
-                showsVerticalScrollIndicator={false}
-                numColumns={2}
-                data={[1,1,1,1,1,1,1,1,1,1,1,1,1,1]}
-                renderItem={renderProduct}
-                keyExtractor={(item,i)=>i.toString()}
-                />
+                {
+                    searchProduct.length>0?(
+                        <FlatList
+                        contentContainerStyle={{paddingBottom:10,alignContent:'space-around'}}
+                        showsVerticalScrollIndicator={false}
+                        numColumns={2}
+                        data={searchProduct}
+                        renderItem={renderProduct}
+                        keyExtractor={(item,i)=>i.toString()}
+                        />
+                    ):(
+                    <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+                        <NotFoundIcon
+                        name="search1"
+                        size={responsiveFontSize(10)}
+                        color="grey"
+                        />
+                        <Text style={{fontSize:responsiveFontSize(5),color:'grey',fontFamily:'Montserrat-Bold'}}>Not Found</Text>
+                    </View>
+                    )
+                }
             </View>
         )
     }
@@ -67,4 +85,7 @@ const styles=StyleSheet.create({
 
 })
 
-export default Search;
+function mapStateToProp({searchProduct}){
+    return {searchProduct}
+}
+export default connect(mapStateToProp,actions)(Search);

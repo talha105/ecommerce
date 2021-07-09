@@ -8,7 +8,7 @@ import {
 import HeartIcon from "react-native-vector-icons/FontAwesome";
 import {useTheme} from "@react-navigation/native"
 
-function ProductItem({price,title,img,oldPrice,call,fav}){
+function ProductItem({price,title,img,oldPrice,call,latest}){
     const {colors}=useTheme()
     return(
         <TouchableOpacity 
@@ -31,9 +31,16 @@ function ProductItem({price,title,img,oldPrice,call,fav}){
             </View>
             <View style={{width:'100%',padding:responsiveFontSize(1)}}>
             <Text style={{color:colors.text,width:'100%',textTransform:'uppercase',fontSize:12}}>{title.length>15?title.slice(15):title+"..."}</Text>
-                <View style={{flexDirection:'row',width:'100%'}}>
+                <View style={{flexDirection:'row',alignItems:'center',}}>
+                <View style={{flexDirection:'row',width:'75%'}}>
                     <Text style={{color:colors.card,fontSize:12}}>{price}</Text>
                     <Text style={{paddingLeft:responsiveFontSize(1),fontSize:12,color:'grey',textDecorationLine:'line-through'}}>{oldPrice}</Text>
+                </View>
+                {latest?(
+                    <View>
+                    <Text style={{color:'red',fontSize:responsiveFontSize(1.5),fontFamily:'Montserrat-Medium'}}>NEW</Text>
+                </View>
+                ):null}
                 </View>
             </View>
             <View 

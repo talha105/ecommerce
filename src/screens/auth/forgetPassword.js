@@ -12,7 +12,8 @@ import {
 import * as actions from "../../store/action"
 import Btn from "../../components/btn"
 import { connect } from 'react-redux';
-import {useTheme} from "@react-navigation/native"
+import {useTheme} from "@react-navigation/native";
+import SuccessModel from '../../components/succesModel';
 
 const {height,width}=Dimensions.get('screen')
 
@@ -24,6 +25,8 @@ function ForgetPassword({login,navigation,forgetPassword}){
     
     const [submit,setSubmit]=useState();
     const [loader,setLoader]=useState(false)
+    const [model,setModel]=useState(false)
+    const [data,setData]=useState({})
     const translateY=useRef(new Animated.Value(600)).current
     useEffect(()=>{
         Animated.timing(translateY,{
@@ -53,7 +56,11 @@ function ForgetPassword({login,navigation,forgetPassword}){
         setSubmit(true)
         if(fields.email){
             renderLoader(true)
-            forgetPassword(fields).then(()=>renderLoader(false)).catch((err)=>{
+            forgetPassword(fields.email).then((res)=>{
+                renderLoader(false)
+                res.success?setModel(true):null
+                setData(res)
+            }).catch((err)=>{
                 renderLoader(false)
                 alert(err)
             })
@@ -62,6 +69,13 @@ function ForgetPassword({login,navigation,forgetPassword}){
 
     return(
                 <View style={{flex:1,backgroundColor:colors.card}}>
+                    {data.success?(
+                        <SuccessModel
+                        title={data.message}
+                        visible={model}
+                        closeModle={()=>setModel(false)}
+                        />
+                    ):null}
                     <View 
                     style={styles.con}>
                         <TouchableOpacity 
@@ -76,7 +90,8 @@ function ForgetPassword({login,navigation,forgetPassword}){
                         </TouchableOpacity>
                             <View style={{...styles.heading,marginBottom:20}}>
                                 <Image
-                                style={{width:responsiveFontSize(10),height:responsiveFontSize(10)}}
+                                resizeMode="contain"
+                                style={{width:responsiveFontSize(13),height:responsiveFontSize(12)}}
                                 source={require('../../../assets/logo.png')}
                                 />
                                 <Text style={{fontSize:30,color:'white',fontWeight:'bold'}}>
@@ -111,9 +126,11 @@ function ForgetPassword({login,navigation,forgetPassword}){
                                     placeHolder="Email"
                                     color="grey"
                                     />
-                            {/* <View>
-                                <Text style={{fontSize:12,color:'red',width:'100%',textAlign:'center'}}>Server Error</Text>
-                            </View> */}
+                                {data.success==false?(
+                                    <View>
+                                    <Text style={{fontSize:12,color:'red',width:'100%',textAlign:'center'}}>email not found</Text>
+                                </View>
+                                ):null}
                                 <View style={{marginVertical:responsiveFontSize(1)}}>
                                 <Btn
                                 text="Reset Password"

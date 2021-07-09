@@ -67,7 +67,12 @@ function Login({login,navigation,user}){
         try {
           await GoogleSignin.hasPlayServices();
           const userInfo = await GoogleSignin.signIn();
-          console.log(userInfo.user)
+          const {id,name,email}=userInfo.user
+          login({
+              first_name:name,
+              email,
+              social_login:1
+          })
         } catch (error) {
           if (error.code === statusCodes.SIGN_IN_CANCELLED) {
             // user cancelled the login flow

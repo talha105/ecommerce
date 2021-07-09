@@ -101,7 +101,8 @@ function SignUp({registration,navigation,user,clearUser}){
                         </TouchableOpacity>
                             <View style={{...styles.heading,marginBottom:20}}>
                                 <Image
-                                style={{width:responsiveFontSize(10),height:responsiveFontSize(10)}}
+                                resizeMode="contain"
+                                style={{width:responsiveFontSize(13),height:responsiveFontSize(12)}}
                                 source={require('../../../assets/logo.png')}
                                 />
                                 <Text style={{fontSize:30,color:'white',fontWeight:'bold'}}>

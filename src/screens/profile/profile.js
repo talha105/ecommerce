@@ -33,13 +33,14 @@ function Profile({navigation,editProfile,changeTheme,theme,logOut,getProfile,id,
         email:"",
         number:"",
         address:"",
-        imageEdit:false
     })
     useLayoutEffect(()=>{
         navigation.setOptions({
             headerTitle: props => <Text style={{textAlign:'center',color:'white',fontSize:responsiveFontSize(2.5),textTransform:'uppercase',fontFamily:'Montserrat-Bold'}}>{props.children}</Text>,
             headerRight: () => (
-              <TouchableOpacity style={{paddingRight:responsiveWidth(5)}}>
+              <TouchableOpacity 
+              onPress={logOut}
+              style={{paddingRight:responsiveWidth(5)}}>
                   <LogoutIcon name="logout" size={22} color='white'/>
               </TouchableOpacity>
             )
@@ -68,7 +69,6 @@ function Profile({navigation,editProfile,changeTheme,theme,logOut,getProfile,id,
           }).then(image => {
             getValue("image",image)
             setImgModel(false)
-            getValue("imageEdit",true)
           });
     }
 
@@ -80,14 +80,12 @@ function Profile({navigation,editProfile,changeTheme,theme,logOut,getProfile,id,
           }).then(image => {
             getValue("image",image)
             setImgModel(false)
-            getValue("imageEdit",true)
           });
     }
-    console.log(fields)
 
     function onEditProfile(){
         setSubmit(true)
-        if(fields.last_name && fields.first_name && fields.number && fields.address){
+        if(fields.first_name && fields.number && fields.address){
             setLoader(true)
             setSubmit(false)
             editProfile(fields).then(()=>{
@@ -173,11 +171,11 @@ function Profile({navigation,editProfile,changeTheme,theme,logOut,getProfile,id,
                     <View style={{width:'90%',marginVertical:responsiveFontSize(0.25)}}>
                         <Text style={{color:colors.text,marginVertical:responsiveFontSize(1),marginLeft:responsiveFontSize(1)}}>Last Name</Text>
                         <TextInput
-                        placeholder="last name"
+                        placeholder="last name (optional)"
                         defaultValue={fields.last_name}
                         value={fields.last_name}
                         onChangeText={(e)=>getValue("last_name",e)}
-                        style={{color:colors.text,backgroundColor:colors.background,borderColor:!fields.last_name && submit?"red":colors.card,borderWidth:1,borderRadius:responsiveFontSize(5),padding:responsiveFontSize(0.75),paddingLeft:responsiveFontSize(2)}}
+                        style={{color:colors.text,backgroundColor:colors.background,borderColor:colors.card,borderWidth:1,borderRadius:responsiveFontSize(5),padding:responsiveFontSize(0.75),paddingLeft:responsiveFontSize(2)}}
                         />
                     </View>
                     <View style={{width:'90%',marginVertical:responsiveFontSize(0.25)}}>

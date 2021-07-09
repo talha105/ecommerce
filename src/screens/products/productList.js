@@ -21,11 +21,12 @@ function ProductList ({navigation,route,getProducts,products}){
         navigation.setOptions({
             headerTitle: props => <Text style={{textAlign:'center',color:'white',fontSize:responsiveFontSize(2.5),textTransform:'uppercase',fontFamily:'Montserrat-Bold'}}>{props.children}</Text>,
             headerRight: () => (
-                <TouchableOpacity style={{paddingRight:responsiveWidth(5)}}>
+                <TouchableOpacity 
+                onPress={()=>navigation.jumpTo('profile')}
+                style={{paddingRight:responsiveWidth(5)}}>
                     <ProfileIcon name="user-circle" size={22} color='white'/>
                 </TouchableOpacity>
             )
-            
           });
     },[navigation])
 
@@ -42,6 +43,7 @@ function ProductList ({navigation,route,getProducts,products}){
             oldPrice={`$${Math.round(((parseInt(item.discount)/100)*item.price)+parseInt(item.price))}`}
             img={{uri:item.images}}
             call={()=>navigation.push('productDetail',item)}
+            latest={item.is_latest?true:false}
             />
         )
     }
@@ -55,7 +57,7 @@ function ProductList ({navigation,route,getProducts,products}){
                     <ProductBar/>
                 </View>
                 <FlatList
-                contentContainerStyle={{paddingBottom:10,alignItems:'center'}}
+                contentContainerStyle={{paddingBottom:10,alignContent:'space-around'}}
                 showsVerticalScrollIndicator={false}
                 numColumns={2}
                 data={products}

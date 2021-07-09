@@ -1,19 +1,20 @@
 import React, { useEffect, useState,useLayoutEffect } from 'react';
-import { View ,Text,TouchableOpacity,FlatList,StyleSheet,Image} from 'react-native';
+import { View ,Text,TouchableOpacity,FlatList,StyleSheet} from 'react-native';
 import {
     responsiveHeight,
     responsiveWidth,
     responsiveFontSize
-  } from "react-native-responsive-dimensions";
+} from "react-native-responsive-dimensions";
 import LogoutIcon from "react-native-vector-icons/AntDesign";
 import ProfileIcon from "react-native-vector-icons/FontAwesome5";
 import Loader from '../../components/pageLoader';
 import {useTheme} from "@react-navigation/native";
 import NotifyModel from '../../components/notifyModel';
 import NotFoundIcon from "react-native-vector-icons/AntDesign";
-import { justifyContent } from 'styled-system';
+import * as actions from "../../store/action"
+import { connect } from 'react-redux';
 
-function Notification ({navigation}){
+function Notification ({navigation,getNotification,id,notifications}){
     const {colors}=useTheme();
     const [loading,setLoading]=useState(true)
     const [model,setModel]=useState(false)
@@ -23,7 +24,9 @@ function Notification ({navigation}){
         navigation.setOptions({
             headerTitle: props => <Text style={{textAlign:'center',color:'white',fontSize:responsiveFontSize(2.5),textTransform:'uppercase',fontFamily:'Montserrat-Bold'}}>{props.children}</Text>,
             headerRight: () => (
-                <TouchableOpacity style={{paddingRight:responsiveWidth(5)}}>
+                <TouchableOpacity 
+                onPress={()=>navigation.jumpTo('profile')}
+                style={{paddingRight:responsiveWidth(5)}}>
                     <ProfileIcon name="user-circle" size={22} color='white'/>
                 </TouchableOpacity>
             )
@@ -32,7 +35,7 @@ function Notification ({navigation}){
     },[navigation])
 
     useEffect(()=>{
-        setLoading(false)
+        getNotification(id).then(()=>setLoading(false))
     },[])
 
 
@@ -42,8 +45,8 @@ function Notification ({navigation}){
             <TouchableOpacity 
             onPress={()=>{
                 setModelData({
-                    title:"How are you !",
-                    des:"Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available"
+                    title:item.title,
+                    des:item.description
                 })
                 setModel(true)
             }}
@@ -56,8 +59,8 @@ function Notification ({navigation}){
                     />
                 </View>
                 <View style={{justifyContent:'center',width:'50%'}}>
-                    <Text style={{color:colors.card,fontFamily:'Montserrat-Medium'}}>How are you !</Text>
-                    <Text style={{fontSize:responsiveFontSize(1.5),textAlign:'left',color:'grey'}}>Lorem ipsum is a placeholder text commonly used to  the visual form of a... </Text>
+                    <Text style={{color:colors.card,fontFamily:'Montserrat-Medium'}}>{item.title}</Text>
+                    <Text style={{fontSize:responsiveFontSize(1.5),textAlign:'left',color:'grey'}}>{item.description.length>40?item.description.slice(0,40)+"...":item.description}</Text>
                 </View>
                 <View style={{justifyContent:'center',alignItems:'center',width:'25%'}}>
                 <LogoutIcon
@@ -81,11 +84,11 @@ function Notification ({navigation}){
                 des={modelData.des}
                 title={modelData.title}
                 />
-                {true?(
+                {notifications.length>0?(
                     <FlatList
                     contentContainerStyle={{paddingBottom:responsiveFontSize(1),alignItems:'center',paddingHorizontal:responsiveFontSize(1)}}
                     showsVerticalScrollIndicator={false}
-                    data={[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]}
+                    data={notifications.reverse()}
                     renderItem={renderProduct}
                     keyExtractor={(item,i)=>i.toString()}
                     />
@@ -118,8 +121,14 @@ const styles=StyleSheet.create({
         shadowRadius: 3.84,
         paddingVertical:responsiveFontSize(1.5),
         elevation: 5,
-        borderRadius:7
+        borderRadius:7,
+        height:responsiveHeight(12)
     }
 })
-
-export default Notification;
+function mapStateToProps({user,notifications}){
+    return {
+        id:user.data.data.id,
+        notifications
+    }
+}
+export default connect(mapStateToProps,actions)(Notification);

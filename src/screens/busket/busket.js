@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useLayoutEffect } from 'react';
+import React, { useEffect, useState,useLayoutEffect, useMemo } from 'react';
 import { View ,Text,TouchableOpacity,FlatList,StyleSheet,Image} from 'react-native';
 import {
     responsiveHeight,
@@ -17,35 +17,74 @@ import {
     CircleIcon
   } from "native-base"
 import {connect} from "react-redux"
-import { CardField, useStripe ,StripeProvider} from '@stripe/stripe-react-native';
+import SlipModel from '../../components/slipModel';
+import PaymentModel from '../../components/paymentModel';
 
-function Busket ({navigation,busket,deleteCardItem}){
+function Busket ({navigation,busket,deleteCardItem,sendOrder,id,clearBusket,getProfile,profile}){
     const {colors}=useTheme();
-    const {createToken } = useStripe();
     const [loading,setLoading]=useState(true)
     const [model,setModel]=useState(false)
-    const [modelData,setModelData]=useState({})
     const [delModel,setDelModel]=useState(false)
+    const [payModel,setPayModel]=useState(false)
     const [currentId,setCurrentId]=useState("")
+    const [loader,setLoader]=useState(false)
+    const [submit,setSubmit]=useState(false)
+    const [fields,setFields]=useState({})
+    
+    function getValue(k,v){
+        setFields((pS)=>{
+            return{
+                ...pS,
+                [k]:v
+            }
+        })
+    }
+
     useLayoutEffect(()=>{
         navigation.setOptions({
             headerTitle: props => <Text style={{textAlign:'center',color:'white',fontSize:responsiveFontSize(2.5),textTransform:'uppercase',fontFamily:'Montserrat-Bold'}}>{props.children}</Text>,
             headerRight: () => (
-                <TouchableOpacity style={{paddingRight:responsiveWidth(5)}}>
+                <TouchableOpacity 
+                onPress={()=>navigation.jumpTo('profile')}
+                style={{paddingRight:responsiveWidth(5)}}>
                     <ProfileIcon name="user-circle" size={22} color='white'/>
                 </TouchableOpacity>
             )
             
           });
     },[navigation])
-
+    
     useEffect(()=>{
-        setLoading(false)
+        getProfile(id).then(()=>{
+            setLoading(false)
+        })
     },[])
 
+    const profileMemo=useMemo(()=>{
+        const {
+            address,
+            email,
+            number
+        }=profile;
+        if(profile.id){
+            getValue('email',email)
+            getValue('address',address)
+            getValue('phone_number',number)
+        }
+    },[profile])
 
     function orderNow(){
-
+        setSubmit(true)
+        if(fields.stripeToken && fields.email && fields.phone_number && fields.address){
+            setLoader(true)
+            sendOrder({...fields,data:busket,user_id:id,total_price:renderTotal(busket)}).then(()=>{
+                setLoader(false)
+                setModel(true)
+                setPayModel(false)
+                setSubmit(false)
+                setFields({})
+            })
+        }
     }
 
     function renderTotal(bus){
@@ -63,13 +102,6 @@ function Busket ({navigation,busket,deleteCardItem}){
     function renderProduct({item}){
         return(
             <TouchableOpacity 
-            onPress={()=>{
-                setModelData({
-                    title:"How are you !",
-                    des:"Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available"
-                })
-                setModel(true)
-            }}
             activeOpacity={0.7} style={{...styles.con,backgroundColor:colors.background}}>
                 <View style={{justifyContent:'center',alignItems:'center',width:'25%'}}>
                     <Image
@@ -120,6 +152,26 @@ function Busket ({navigation,busket,deleteCardItem}){
                 closeModle={()=>setDelModel(false)}
                 reDirect={()=>deleteCardItem(currentId)}
                 />
+                <SlipModel
+                visible={model}
+                title="Successfully Ordered"
+                closeModle={()=>{
+                    setModel(false)
+                    clearBusket()
+                    navigation.jumpTo("history")
+                }}
+                name={profile.first_name+" "+profile.last_name}
+                />
+                <PaymentModel
+                visible={payModel}
+                closeModle={()=>setPayModel(false)}
+                fields={fields}
+                getValue={getValue}
+                submit={submit}
+                totalAmount={renderTotal(busket)}
+                orderNow={orderNow}
+                loader={loader}
+                />
                 {busket.length>0?(
                     <>
                     <FlatList
@@ -129,46 +181,12 @@ function Busket ({navigation,busket,deleteCardItem}){
                     renderItem={renderProduct}
                     keyExtractor={(item,i)=>i.toString()}
                     />
-                    <View style={{width:'95%',marginLeft:'auto',marginRight:'auto',...styles.payment,backgroundColor:colors.background}}>
-                        <Text style={{fontFamily:'Montserrat-Bold',textTransform:'uppercase',color:'grey'}}>Payment:</Text>
-                            <StripeProvider publishableKey="pk_live_51IjNTMDTC6LK12UW7aqlq2KXrAWpcJNx7xjt3zV32xqylMdQmmQ4DLs1IvS0LJ1X5NHHPrKvq97cjCC73uZdHOt000aN6GTLZQ">
-                                <CardField
-                                postalCodeEnabled={false}
-                                placeholder={{
-                                    number: '4242 4242 4242 4242',
-                                }}
-                                
-                                cardStyle={{
-                                    backgroundColor: '#FFFFFF',
-                                    textColor: '#000000',
-                                }}
-                                style={{
-                                    width: '100%',
-                                    height: 50,
-                                    marginVertical: responsiveFontSize(1),
-                                }}
-                                onCardChange={(cardDetails) => {
-                                    if(cardDetails.complete){
-                                        createToken(cardDetails).then(res=>{
-                                            console.log(cardDetails)
-                                            
-                                        })
-                                    }
-                                    
-                                }}
-
-                                />
-                            </StripeProvider>
-                        <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',borderTopWidth:0.75,borderColor:'grey',paddingVertical:responsiveFontSize(1)}}>
-                            <Text style={{color:'grey'}}>Total:</Text>
-                            <Text style={{color:'grey'}}>${renderTotal(busket)}</Text>
-                        </View>
-                    </View>
                     <View style={{padding:responsiveFontSize(1)}}>
                         <Btn
                         text="Order now"
                         color="green"
-                        call={orderNow}
+                        loader={loader}
+                        call={()=>setPayModel(true)}
                         />
                     </View>
                     </>
@@ -217,8 +235,13 @@ const styles=StyleSheet.create({
     }
 })
 
-function mapStateToProps({busket}){
-    return {busket}
+function mapStateToProps({busket,user,profile}){
+    return {
+        busket,
+        id:user.data.data.id,
+        id:user.data.data.id,
+        profile
+    }
 }
 
 export default connect(mapStateToProps,actions)(Busket);

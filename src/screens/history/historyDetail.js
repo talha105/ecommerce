@@ -24,7 +24,7 @@ import * as actions from "../../store/action";
 import PrintIcon from "react-native-vector-icons/AntDesign"
 import {connect} from "react-redux"
 
-function HistoryDetail({navigation,route}){
+function HistoryDetail({navigation,route,profile}){
 
     useLayoutEffect(()=>{
         navigation.setOptions({
@@ -47,21 +47,29 @@ function HistoryDetail({navigation,route}){
     useEffect(()=>{
           setLoading(false)
     },[])
-
     function renderInvoiceList(){
-        return [1,1,1,1,1].map((item,i)=>{
+        return route.params.data.map((item,i)=>{
             return(
                 <View key={i} style={{justifyContent:'center',alignItems:'center'}}>
                     <View style={{width:'90%',flexDirection:'row',alignItems:'center',borderBottomWidth:0.75,borderColor:'grey',paddingVertical:responsiveFontSize(0.75)}}>
-                        <Text  style={{...styles.text,width:'40%'}}>Niki shoes and camera</Text>
-                        <Text  style={{...styles.text,width:'20%',textAlign:'center'}}>$300</Text>
-                        <Text  style={{...styles.text,width:'20%',textAlign:'center'}}>x5</Text>
-                        <Text  style={{...styles.text,width:'20%',textAlign:'center'}}>$1500</Text>
+                        <Text  style={{...styles.text,width:'40%'}}>{item.title}</Text>
+                        <Text  style={{...styles.text,width:'20%',textAlign:'center'}}>${item.price}</Text>
+                        <Text  style={{...styles.text,width:'20%',textAlign:'center'}}>x{item.quantity}</Text>
+                        <Text  style={{...styles.text,width:'20%',textAlign:'center'}}>${item.price*item.quantity}</Text>
                     </View>
                 </View>
             )
         })
     }
+
+    const {
+        email,
+        id,
+        phone_number,
+        total_price,
+        created_at,
+        address
+    }=route.params
     
     if(loading){
         return <Loader/>
@@ -102,16 +110,16 @@ function HistoryDetail({navigation,route}){
                     <View style={{width:'70%'}}>
                         <Text style={{...styles.text,fontFamily:'Montserrat-Medium',paddingBottom:responsiveFontSize(1)}}>BILL TO:</Text>
                         <Text style={{...styles.text,width:'70%',lineHeight:15}}>
-                        Client Name: {"Muhammad Talha"}{"\n"}
-                        Client Address:  office is located building. Keas 69 Str.
-                        Client Mobile No:  0347-2743550{"\n"}
+                        Client Name: {profile.first_name+" "+profile.last_name}{"\n"}
+                        Client Address:  {"\n"}{address}{"\n"}
+                        Client Mobile No:  {phone_number}
                         </Text>
                     </View>
                     <View style={{width:'30%',alignItems:'flex-end'}}>
                         <Text style={{...styles.text,fontFamily:'Montserrat-Medium'}}>Invoice No:</Text>
-                        <Text style={{...styles.text,paddingBottom:responsiveFontSize(1)}}>346578904</Text>
+                        <Text style={{...styles.text,paddingBottom:responsiveFontSize(1)}}>{id}</Text>
                         <Text style={{...styles.text,fontFamily:'Montserrat-Medium'}}>Date:</Text>
-                        <Text style={{...styles.text}}>02/06/2021</Text>
+                        <Text style={{...styles.text}}>{created_at.slice(0,10)}</Text>
                     </View>
                 </View>
                 <View style={{justifyContent:'center',alignItems:'center'}}>
@@ -126,7 +134,7 @@ function HistoryDetail({navigation,route}){
                 <View style={{justifyContent:'center',alignItems:'center'}}>
                         <View style={{width:'90%',flexDirection:'row',alignItems:'center',borderBottomWidth:0.75,borderColor:colors.card,paddingVertical:responsiveFontSize(0.75)}}>
                             <Text  style={{...styles.text,width:'80%',textAlign:"center",color:colors.card,fontFamily:'Montserrat-Medium'}}>Total</Text>
-                            <Text  style={{...styles.text,width:'20%',textAlign:'center'}}>$13000</Text>
+                            <Text  style={{...styles.text,width:'20%',textAlign:'center'}}>${total_price}</Text>
                         </View>
                 </View>
             </ScrollView>
@@ -141,8 +149,8 @@ const styles=StyleSheet.create({
     }
 })
 
-function mapStateToProps({busket}){
-    return{busket}
+function mapStateToProps({busket,profile}){
+    return{busket,profile}
 }
 
 export default connect(mapStateToProps,actions)(HistoryDetail);
